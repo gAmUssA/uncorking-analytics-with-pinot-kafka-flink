@@ -39,7 +39,6 @@ If you need to install it, please download Docker Desktop and follow the instruc
 * Resources: Pinot works well in Docker but is not designed as a desktop solution.
 Running it locally requires a minimum of 8GB of Memory and 10GB of disk space.
 
-
 == Training Outline and Timeline
 
 === Welcome Breakfast 
@@ -117,3 +116,17 @@ Speakers: Viktor, Upkar
 
 === Equipment and Software Check
 * Ensure all participants have installed Docker Desktop and have the necessary system resources as outlined in the prerequisites.
+
+== Setup Instructions
+
+. *Clone the Repository:*
++
+[source,bash]
+----
+git clone https://github.com/gAmUssA/uncorking-analytics-with-pinot-kafka-flink  && cd $_
+----
+
+== Practice Part Overview
+The practical exercises of this workshop are divided into three distinct parts, each designed to give you hands-on experience with Apache Pinot's capabilities in different scenarios. Below are the details and objectives for each part:
+
+include::01_pinot/README.adoc[]

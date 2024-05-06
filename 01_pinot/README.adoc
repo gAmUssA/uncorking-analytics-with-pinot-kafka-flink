@@ -1,0 +1,71 @@
+=== Part 1: Batch Ingestion from Files
+
+* *Directory:* `01_pinot`
+* *Objective:* Learn how to perform batch ingestion of data from flat files into Apache Pinot using batch ingestion methods.
+
+* *Setup:*
+** Ensure Docker Compose is running with all necessary services for Apache Pinot.
+** Navigate to the `01_pinot` directory where the necessary files and scripts are located.
+
+* *Tasks:*
+
+==== Step 1: Preparing Data Files
+
+* *Description:* Start by ensuring you have the JSON files ready for ingestion. 
+
+These files contain the data you will load into Apache Pinot.
+* *Action:*
++
+[source,bash]
+----
+# Verify the presence of data files
+ls -l data/*.jsonl
+----
+
+==== Step 2: Configuring the Schema and Table
+
+* *Description:* Define the schema and table configuration for Apache Pinot to understand how to process and store the data.
+* *Action:*
++
+[source,bash]
+----
+include::Makefile[lines=47..51]
+----
+
+==== Step 3: Ingesting Data
+* *Description:* Perform the batch ingestion of data from your CSV files into Apache Pinot.
+* *Action:*
++
+[source,bash]
+----
+# Execute the batch ingestion script
+include::Makefile[lines=54..56]
+----
+
+* *Verification:*
+** After ingesting the data, use the Apache Pinot UI to verify that the data is correctly loaded and queryable.
+** Open your web browser and navigate to `http://localhost:9000/query` to access the query console.
+** Run a sample query to ensure data has been loaded:
++
+[source,sql]
+----
+SELECT count(*) FROM movies
+WHERE actors = 'Mel Gibson';
+----
+
+* *Troubleshooting:*
+** If data does not appear in the UI, check the Docker logs for any errors during the ingestion process:
++
+[source,bash]
+----
+docker logs pinot-controller
+----
+
+==== Step 4: Cleanup (Optional)
+* *Description:* Clean up resources if necessary, to prepare for other workshop parts.
+* *Action:*
++
+[source,bash]
+----
+make destroy
+----
