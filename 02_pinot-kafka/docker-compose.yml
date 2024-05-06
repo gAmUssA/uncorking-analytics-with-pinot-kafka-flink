@@ -1,0 +1,133 @@
+services:
+  producer:
+    build:
+      context: producer
+    container_name: producer
+    environment:
+      - BOOTSTRAPSERVER=kafka:9092
+      - TOPIC=movie_ratings
+      - DATA=/tmp/movies.json
+      - LIMIT=1000000
+    depends_on:
+      - kafka
+    volumes:
+      - ./data/:/tmp/
+  
+  pinot-zookeeper:
+    image: zookeeper:latest
+    container_name: pinot-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  
+  pinot-controller:
+    image: apachepinot/pinot:1.1.0-21-openjdk
+    command: "StartController -zkAddress pinot-zookeeper:2181"
+    container_name: pinot-controller
+    hostname: pinot-controller
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xlog:gc:gc-pinot-controller.log"
+    depends_on:
+      - pinot-zookeeper
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9000/health || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - ./table/:/tmp/pinot/table/
+      - ./data/:/tmp/pinot/data/
+
+  pinot-broker:
+    image: apachepinot/pinot:1.1.0-21-openjdk
+    command: "StartBroker -zkAddress pinot-zookeeper:2181"
+    restart: unless-stopped
+    container_name: "pinot-broker"
+    ports:
+      - "8099:8099"
+    environment:
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xlog:gc:gc-pinot-broker.log"
+    depends_on:
+      pinot-controller:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8099/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  pinot-server:
+    image: apachepinot/pinot:1.1.0-21-openjdk
+    command: "StartServer -zkAddress pinot-zookeeper:2181"
+    restart: unless-stopped
+    container_name: "pinot-server"
+    ports:
+      - "8097:8097"
+      - "8098:8098"
+    environment:
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx16G -XX:+UseG1GC -XX:MaxGCPauseMillis=200  -Xlog:gc:gc-pinot-server.log"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8097/health/readiness || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      pinot-controller:
+        condition: service_healthy
+
+  kafka:
+    image: docker.io/bitnami/kafka:3.7
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "9092" ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    environment:
+      # KRaft settings
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,PLAINTEXT_HOST://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://localhost:29092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+
+  console:
+    hostname: console
+    container_name: console
+    image: docker.redpanda.com/redpandadata/console:latest
+    restart: on-failure
+    entrypoint: /bin/sh
+    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        server:
+          listenPort: 9080
+        kafka:
+          brokers: ["kafka:9092"]
+          schemaRegistry:
+            enabled: false
+            urls: ["http://schema-registry:8081"]
+        connect:
+          enabled: false
+    ports:
+      - "9080:9080"
+    depends_on:
+      - kafka
+  
