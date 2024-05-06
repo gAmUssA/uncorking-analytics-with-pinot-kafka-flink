@@ -14,6 +14,7 @@
 * *Description:* Start by ensuring you have the JSON files ready for ingestion. 
 
 These files contain the data you will load into Apache Pinot.
+
 * *Action:*
 +
 [source,bash]
