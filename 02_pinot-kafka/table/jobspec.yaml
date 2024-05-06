@@ -1,0 +1,31 @@
+executionFrameworkSpec:
+  name: 'standalone'
+  segmentGenerationJobRunnerClassName: 'org.apache.pinot.plugin.ingestion.batch.standalone.SegmentGenerationJobRunner'
+  segmentTarPushJobRunnerClassName: 'org.apache.pinot.plugin.ingestion.batch.standalone.SegmentTarPushJobRunner'
+  segmentUriPushJobRunnerClassName: 'org.apache.pinot.plugin.ingestion.batch.standalone.SegmentUriPushJobRunner'
+jobType: SegmentCreationAndTarPush
+inputDirURI: '/tmp/pinot/data'
+includeFileNamePattern: 'glob:**/*.json'
+outputDirURI: './out'
+overwriteOutput: true
+
+pinotFSSpecs:
+  - scheme: local
+    className: org.apache.pinot.spi.filesystem.LocalPinotFS
+
+recordReaderSpec:
+  dataFormat: 'json'
+  className: 'org.apache.pinot.plugin.inputformat.json.JSONRecordReader'
+  
+tableSpec:
+  tableName: 'movies'
+  schemaURI: 'http://localhost:9000/tables/movies/schema'
+  tableConfigURI: 'http://localhost:9000/tables/movies'
+
+pinotClusterSpecs:
+  - controllerURI: 'http://localhost:9000'
+
+pushJobSpec:
+  pushAttempts: 2
+  pushRetryIntervalMillis: 1000
+  

@@ -29,6 +29,7 @@ At the successful completion of this training, you will be able to:
 * Create a table in Pinot, including schema definition and table configuration.
 * Ingest batch data into an offline table and streaming data from a Kafka topic into a real-time table.
 * Use the Pinot UI to monitor and observe your Pinot cluster.
+* Use the Pinot Query Console 
 
 == Prerequisites
 
@@ -130,3 +131,5 @@ git clone https://github.com/gAmUssA/uncorking-analytics-with-pinot-kafka-flink 
 The practical exercises of this workshop are divided into three distinct parts, each designed to give you hands-on experience with Apache Pinot's capabilities in different scenarios. Below are the details and objectives for each part:
 
 include::01_pinot/README.adoc[]
+
+include::02_pinot-kafka/README.adoc[]
