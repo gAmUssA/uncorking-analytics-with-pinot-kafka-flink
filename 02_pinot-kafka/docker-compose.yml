@@ -6,7 +6,7 @@ services:
     environment:
       - BOOTSTRAPSERVER=kafka:9092
       - TOPIC=movie_ratings
-      - DATA=/tmp/movies.json
+      - DATA=/tmp/movies.jsonl
       - LIMIT=1000000
     depends_on:
       - kafka
