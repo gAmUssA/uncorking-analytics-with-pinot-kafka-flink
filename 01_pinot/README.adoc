@@ -45,7 +45,7 @@ include::Makefile[lines=54..56]
 
 * *Verification:*
 ** After ingesting the data, use the Apache Pinot UI to verify that the data is correctly loaded and queryable.
-** Open your web browser and navigate to `http://localhost:9000/query` to access the query console.
+** Open your web browser and navigate to `http://localhost:9000/#/query` to access the query console.
 ** Run a sample query to ensure data has been loaded:
 +
 [source,sql]
