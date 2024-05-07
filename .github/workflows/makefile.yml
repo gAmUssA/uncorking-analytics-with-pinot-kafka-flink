@@ -1,0 +1,24 @@
+name: Smoke Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: make pull_images 
+
+    - name: Run All
+      run: make run_default_make
+
+    - name: Clean up
+      run: make stop_containers
