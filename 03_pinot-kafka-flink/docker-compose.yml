@@ -8,7 +8,7 @@ services:
       - MOVIE_TOPIC=movies
       - RATING_TOPIC=movie_ratings
       - DATA=/tmp/movies.jsonl
-      - LIMIT=1000000
+      - LIMIT=100000000
     volumes:
       - ./data/:/tmp/
 

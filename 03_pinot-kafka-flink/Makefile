@@ -1,17 +1,7 @@
 GREEN=\033[0;32m
 NC=\033[0m # No Color
 
-base: create tables import info
-
-schema:
-	docker run \
-		-v ${PWD}/table/pinot/movie.sample.json:/sample.json \
-		-v ${PWD}/table:/table \
-		apachepinot/pinot:latest JsonToPinotSchema \
-		-jsonFile /sample.json \
-		-pinotSchemaName="movie" \
-		-outputDir="/table" \
-		-dimensions=""
+base: create topic tables validate info
 
 create:
 	docker compose build --no-cache
@@ -64,47 +54,30 @@ topic:
 	docker exec kafka kafka-topics.sh \
 		--bootstrap-server localhost:9092 \
 		--create \
-		--topic movie_ratings
+		--topic rated_movies
 
 tables:
 	@echo "\n 🎥 🍿Creating Rated Movies table..."
-#	@docker exec pinot-controller ./bin/pinot-admin.sh \
-#		AddTable \
-#		-tableConfigFile /tmp/pinot/table/movies.table.json \
-#		-schemaFile /tmp/pinot/table/movies.schema.json \
-#		-exec
-
-#	@docker exec pinot-controller ./bin/pinot-admin.sh \
-#		AddTable \
-#		-tableConfigFile /tmp/pinot/table/ratings.table.json \
-#		-schemaFile /tmp/pinot/table/ratings.schema.json \
-#		-exec
-
-import:
-#	@docker exec pinot-controller ./bin/pinot-admin.sh \
-#		LaunchDataIngestionJob \
-#		-jobSpecFile /tmp/pinot/table/jobspec.yaml
+	@docker exec pinot-controller ./bin/pinot-admin.sh \
+		AddTable \
+		-tableConfigFile /tmp/pinot/table/ratedmovies.table.json \
+		-schemaFile /tmp/pinot/table/ratedmovies.schema.json \
+		-exec
 
 validate:
 	@echo "\n🍷 Getting cluster info..."
 	@curl -sX GET http://localhost:9000/cluster/info -H 'accept: application/json' | jq .
 
-#	@echo "\n🍷 Getting Schemas..."
-#	@SCHEMAS=$$(curl -sX 'GET' \
-#      'http://localhost:9000/schemas' \
-#      -H 'accept: application/json' | jq .); \
-#	if echo "$$SCHEMAS" | grep -q "movie_ratings"; then \
-#		echo "Schema 'movie_ratings' found."; \
-#	else \
-#		echo "Schema 'movie_ratings' not found."; \
-#		exit 1; \
-#	fi; \
-#	if echo "$$SCHEMAS" | grep -q "movies"; then \
-#		echo "Schema 'movies' found."; \
-#	else \
-#		echo "Schema 'movies' not found."; \
-#		exit 1; \
-#	fi
+	@echo "\n🍷 Getting Schemas..."
+	@SCHEMAS=$$(curl -sX 'GET' \
+      'http://localhost:9000/schemas' \
+      -H 'accept: application/json' | jq .); \
+	if echo "$$SCHEMAS" | grep -q "rated_movies"; then \
+		echo "Schema 'rated_movies' found."; \
+	else \
+		echo "Schema 'rated_movies' not found."; \
+		exit 1; \
+	fi; \
 
 info:     	
 	@printf "\n==========================================================\n"
