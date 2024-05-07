@@ -57,12 +57,12 @@ import:
 
 validate:
 	@echo "\n🍷 Getting cluster info..."
-	@curl -sX GET http://localhost:9000/cluster/info -H 'accept: application/json' | jq .
+	@curl -sX GET http://localhost:9000/cluster/info -H 'accept: application/json'
 
 	@echo "\n🍷 Getting Schemas..."
 	@SCHEMAS=$$(curl -sX 'GET' \
       'http://localhost:9000/schemas' \
-      -H 'accept: application/json' | jq .); \
+      -H 'accept: application/json' ); \
 	if echo "$$SCHEMAS" | grep -q "movies"; then \
 		echo "Schema 'movies' found."; \
 	else \

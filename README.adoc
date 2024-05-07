@@ -2,7 +2,7 @@
 Viktor Gamov <viktor@startree.ai>
 v1.0, 2024-04-25
 :toc:
-:imagesdir: assets/images
+:imagesdir: images
 :homepage: http://dev.startree.ai
 
 == Abstract
@@ -118,18 +118,99 @@ Speakers: Viktor, Upkar
 === Equipment and Software Check
 * Ensure all participants have installed Docker Desktop and have the necessary system resources as outlined in the prerequisites.
 
-== Setup Instructions
+== Let's Get Going!
+=== Before the Workshop
 
-. *Clone the Repository:*
+To ensure you are fully prepared for the workshop, please follow these guidelines:
+
+* *Version Control:*
+** Check out the latest version of the workshop repository to access all necessary materials and scripts.
 +
 [source,bash]
 ----
-git clone https://github.com/gAmUssA/uncorking-analytics-with-pinot-kafka-flink  && cd $_
+git clone https://github.com/gAmUssA/uncorking-analytics-with-pinot-kafka-flink.git
+cd uncorking-analytics-with-pinot-kafka-flink
 ----
 
+* *Docker:*
+** Install Docker if it isn't already installed on your system. Download it from https://www.docker.com/products/docker-desktop.
+** Before the workshop begins, pull the necessary Docker images to ensure you have the latest versions:
++
+[source,bash]
+----
+make pull_images
+----
+
+* *Integrated Development Environment (IDE):*
+** Install Visual Studio Code (VSCode) to edit and view the workshop materials comfortably.
+Download VSCode from https://code.visualstudio.com/.
+** Add the AsciiDoc extension from the Visual Studio Code marketplace to enhance your experience with AsciiDoc formatted documents.
+
+=== During the Workshop
+
+* *Validate Setup:*
+** Before diving into the workshop exercises, verify that all Docker containers needed for the workshop are running correctly:
++
+[source,bash]
+----
+docker ps
+----
+** This command helps confirm that there are no unforeseen issues with the Docker containers, ensuring a smooth operation during the workshop.
+
+* *Using VSCode:*
+** Open the workshop directory in VSCode to access and edit files easily.
+Use the AsciiDoc extension to view the formatted documents and instructions:
++
+[source,bash]
+----
+code .
+----
+
+=== Troubleshooting Tips
+
+* *Docker Issues:*
+** If Docker containers fail to start or crash, use the following command to inspect the logs and identify potential issues:
++
+[source,bash]
+----
+docker logs <container_name>
+----
+** This can help in diagnosing problems with specific services.
+
+* *Network Issues:*
+** Ensure no applications are blocking the required ports. If ports are in use or blocked, reconfigure the services to use alternative ports or stop the conflicting applications.
+
+=== Clean Up Post-Workshop
+
+* *Removing Docker Containers:*
+** To clean up after the workshop, you might want to remove the Docker containers used during the session to free up resources:
++
+[source,bash]
+----
+make stop_containers
+----
+** Additionally, prune unused Docker images and volumes to recover disk space:
++
+[source,bash]
+----
+docker system prune -a
+docker volume prune
+----
+
+These steps and tips are designed to prepare you thoroughly for the workshop and to help address common issues that might arise, ensuring a focused and productive learning environment.
+
 == Practice Part Overview
-The practical exercises of this workshop are divided into three distinct parts, each designed to give you hands-on experience with Apache Pinot's capabilities in different scenarios. Below are the details and objectives for each part:
+The practical exercises of this workshop are divided into three distinct parts, each designed to give you hands-on experience with Apache Pinot's capabilities in different scenarios. 
+Below are the details and objectives for each part:
+
+image::figure1.png[]
 
 include::01_pinot/README.adoc[]
 
+image::figure2.png[]
+
 include::02_pinot-kafka/README.adoc[]
+
+image::figure3.png[]
+
+include::03_pinot-kafka-flink/README.adoc[]

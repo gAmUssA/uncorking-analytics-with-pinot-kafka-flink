@@ -70,7 +70,7 @@ order by r.rating desc
     limit 10
 ----
 
-== Clean Up
+==== Clean Up
 * To stop and remove all services related to this part of the workshop, run:
 +
 [source,bash]
@@ -78,7 +78,7 @@ order by r.rating desc
 make destroy
 ----
 
-== Troubleshooting
+==== Troubleshooting
 * If encountering issues such as 'No space left on device' during the Docker build process, free up space using:
 +
 [source,bash]

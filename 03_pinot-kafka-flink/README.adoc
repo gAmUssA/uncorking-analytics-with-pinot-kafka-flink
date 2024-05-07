@@ -99,6 +99,24 @@ FROM MovieRatings LIMIT 10;
 +
 [source,sql]
 ----
+CREATE TABLE RatedMoviesSink    -- <1>
+(
+    movieId     INT,
+    title       STRING,
+    releaseYear INT,
+    actors      ARRAY<STRING>,
+    rating DOUBLE,
+    ratingTime  TIMESTAMP(3),
+    PRIMARY KEY (movieId) NOT ENFORCED -- Declare the PRIMARY KEY constraint
+) WITH (
+      'connector' = 'upsert-kafka', -- This enables updates and deletes
+      'topic' = 'rated_movies',
+      'properties.bootstrap.servers' = 'kafka:9092',
+      'key.format' = 'json', -- Key format is JSON, matching the value format
+      'value.format' = 'json' -- Values are serialized in JSON
+      );
+
+INSERT INTO RatedMoviesSink     -- <2>
 SELECT m.movieId,
        m.title,
        m.releaseYear,
@@ -110,6 +128,8 @@ FROM MovieRatings r
      Movies m
      ON r.movieId = m.movieId;
 ----
+<1> Defining a Kafka Sink
+<2> Writing result of joins to Kafka sink
 
 ==== Step 4: Query Processed Data in Pinot
 * *Description:* After processing the data with Apache Flink, go to the Apache Pinot query console to query your rated and processed data.
@@ -121,16 +141,16 @@ FROM MovieRatings r
 http://localhost:9000/#/query
 ----
 
-== Clean Up
-To stop and remove all services related to this part of the workshop, execute:
+==== Clean Up
+* To stop and remove all services related to this part of the workshop, execute:
 +
 [source,bash]
 ----
 make destroy
 ----
 
-== Troubleshooting
-If encountering any issues during the setup or execution, check the logs of each service:
+==== Troubleshooting
+* If encountering any issues during the setup or execution, check the logs of each service:
 +
 [source,bash]
 ----
