@@ -20,4 +20,12 @@ stop_containers:
 		echo "All containers in \033[1m$$dir\033[0m have been stopped and volumes removed."; \
 	done
 
-.PHONY: all pull_images stop_containers
+# Target to run the default make task in each directory
+run_default_make:
+	@for dir in $(DIRS); do \
+		echo "Running default make in \033[1m$$dir\033[0m..."; \
+		(cd $$dir && make); \
+		echo "Completed running make in \033[1m$$dir\033[0m."; \
+	done
+	
+.PHONY: all pull_images stop_containers run_default_make
