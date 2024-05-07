@@ -110,38 +110,8 @@ info:
 	@printf "\n==========================================================\n"
 	@printf "🍷 Pinot Query UI:		\033[4mhttp://localhost:9000\033[0m\n"
 	@printf "🦊 Redpanda Console:		\033[4mhttp://localhost:9080\033[0m\n"
+	@printf "🐿️ Flink Console:		\033[4mhttp://localhost:8081\033[0m\n"
 	@printf "==========================================================\n"
 
 destroy:
 	docker compose down -v
-
-
-
-# Variables
-BROKER=localhost:9092
-TOPIC=movies
-FILE_PATH=data/movies.jsonl
-DOCKER_KAFKA_CONTAINER=kafka
-BATCH_SIZE=100
-
-.PHONY: create_topic send_data
-
-# Create Kafka topic
-create_topic:
-	@docker exec -it $(DOCKER_KAFKA_CONTAINER) kafka-topics.sh \
-		--bootstrap-server $(BROKER) \
-		--create \
-		--topic $(TOPIC) \
-		--partitions 1 \
-		--replication-factor 1 \
-		--config "cleanup.policy=compact"
-
-# Send data to Kafka topic
-send_data:
-	awk 'BEGIN { RS = ""; batch = ""; count = 0; } \
-		{ key = ""; cmd = "echo \"" $$0 "\" | sed -nE 's/.*\"movieId\":([0-9]+).*/\\1/p'"; \
-		cmd | getline key; close(cmd); \
-		batch = batch key ":" $$0 "\n"; count++; } \
-		count == $(BATCH_SIZE) { print batch | "docker exec -i $(DOCKER_KAFKA_CONTAINER) kafka-console-producer.sh --broker-list $(BROKER) --topic $(TOPIC) --property \"parse.key=true\" --property \"key.separator=:\""; \
-		batch = ""; count = 0; close("docker exec -i $(DOCKER_KAFKA_CONTAINER) kafka-console-producer.sh --broker-list $(BROKER) --topic $(TOPIC) --property \"parse.key=true\" --property \"key.separator=:\""); } \
-		END { if (length(batch) > 0) print batch | "docker exec -i $(DOCKER_KAFKA_CONTAINER) kafka-console-producer.sh --broker-list $(BROKER) --topic $(TOPIC) --property \"parse.key=true\" --property \"key.separator=:" }' $(FILE_PATH)

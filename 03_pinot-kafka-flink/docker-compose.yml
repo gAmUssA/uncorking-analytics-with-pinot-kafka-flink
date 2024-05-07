@@ -5,11 +5,10 @@ services:
     container_name: producer
     environment:
       - BOOTSTRAPSERVER=kafka:9092
-      - TOPIC=movie_ratings
-      - DATA=/tmp/movies.json
+      - MOVIE_TOPIC=movies
+      - RATING_TOPIC=movie_ratings
+      - DATA=/tmp/movies.jsonl
       - LIMIT=1000000
-    depends_on:
-      - kafka
     volumes:
       - ./data/:/tmp/
 
@@ -89,6 +88,12 @@ services:
     container_name: kafka
     ports:
       - "9092:9092"
+      - "29092:29092"
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "9092" ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
     environment:
       # KRaft settings
       - KAFKA_CFG_NODE_ID=0
@@ -149,7 +154,8 @@ services:
       - ./scripts:/tmp/scripts/
 
   taskmanager:
-    image: flink:1.19.0-scala_2.12
+    build:
+      context: flink
     container_name: taskmanager
     hostname: taskmanager
     depends_on:
