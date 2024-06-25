@@ -50,8 +50,23 @@ include::Makefile[lines=54..56]
 +
 [source,sql]
 ----
+-- number of movies with Mel Gibson
 SELECT count(*) FROM movies
 WHERE actors = 'Mel Gibson';
+
+-- the most prolific directors 
+SELECT directors, COUNT(*) AS movieCount
+FROM movies
+GROUP BY directors
+ORDER BY movieCount DESC
+
+-- Popular Genres Over Time
+SELECT genres, releaseYear, COUNT(*) AS movieCount
+FROM movies
+WHERE releaseYear >= 2014
+GROUP BY genres, releaseYear
+ORDER BY releaseYear, movieCount DESC
+
 ----
 
 * *Troubleshooting:*
