@@ -8,7 +8,11 @@
 ** Navigate to the `01_pinot` directory where the necessary files and scripts are located.
 
 * *Tasks:*
-
+[source,bash]
+----
+# Build and deploy
+make
+----
 ==== Step 1: Preparing Data Files
 
 * *Description:* Start by ensuring you have the JSON files ready for ingestion. 
