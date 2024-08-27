@@ -22,7 +22,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
   
   pinot-controller:
-    image: apachepinot/pinot:1.1.0-21-openjdk
+    image: apachepinot/pinot:1.2.0-21-openjdk
     command: "StartController -zkAddress pinot-zookeeper:2181"
     container_name: pinot-controller
     hostname: pinot-controller
@@ -44,7 +44,7 @@ services:
       - ./data/:/tmp/pinot/data/
 
   pinot-broker:
-    image: apachepinot/pinot:1.1.0-21-openjdk
+    image: apachepinot/pinot:1.2.0-21-openjdk
     command: "StartBroker -zkAddress pinot-zookeeper:2181"
     restart: unless-stopped
     container_name: "pinot-broker"
@@ -63,7 +63,7 @@ services:
       start_period: 30s
 
   pinot-server:
-    image: apachepinot/pinot:1.1.0-21-openjdk
+    image: apachepinot/pinot:1.2.0-21-openjdk
     command: "StartServer -zkAddress pinot-zookeeper:2181"
     restart: unless-stopped
     container_name: "pinot-server"
@@ -83,9 +83,10 @@ services:
         condition: service_healthy
 
   kafka:
-    image: docker.io/bitnami/kafka:3.7
+    #image: apache/kafka-native:3.8.0
+    image: apache/kafka:3.8.0
     hostname: kafka
-    container_name: kafka
+    container_name: uncorking-pinot-kafka
     ports:
       - "9092:9092"
       - "29092:29092"
@@ -96,15 +97,16 @@ services:
       retries: 10
     environment:
       # KRaft settings
-      - KAFKA_CFG_NODE_ID=0
-      - KAFKA_CFG_PROCESS_ROLES=controller,broker
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_NODE_ID=0
+      - KAFKA_PROCESS_ROLES=controller,broker
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
       # Listeners
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,PLAINTEXT_HOST://:29092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://localhost:29092
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,PLAINTEXT_HOST://:29092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://localhost:29092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+
 
   console:
     hostname: console
@@ -167,3 +169,13 @@ services:
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 16
+        
+  superset-pinot:
+    image: apachepinot/pinot-superset:latest
+    container_name: superset-pinot
+    command: ""
+    environment:
+      SUPERSET_SECRET_KEY: "pmFmur1eluMiQDoZA+cGHhY/cA8+0+Ko7EZi5afhXWlH1oH/rQkVHNVOY1hRXAUi"
+      TALISMAN_ENABLED: "False"
+    ports:
+      - "8088:8088"
