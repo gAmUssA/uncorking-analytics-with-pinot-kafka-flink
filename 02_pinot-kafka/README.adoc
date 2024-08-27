@@ -64,7 +64,8 @@ select
     m.genres,
     m.releaseYear
 from movies m
-         left join movie_ratings r on m.movieId = r.movieId
+         left join movie_ratings r 
+             on m.movieId = r.movieId
 where r.rating > 0.9
 order by r.rating desc
     limit 10
