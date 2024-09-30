@@ -96,6 +96,7 @@ services:
       timeout: 10s
       retries: 10
     environment:
+      - PATH=/opt/kafka/bin:$PATH
       # KRaft settings
       - KAFKA_NODE_ID=0
       - KAFKA_PROCESS_ROLES=controller,broker
