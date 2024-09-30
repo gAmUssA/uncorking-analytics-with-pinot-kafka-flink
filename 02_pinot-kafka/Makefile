@@ -110,7 +110,7 @@ validate:
 info:     	
 	@printf "\n==========================================================\n"
 	@printf "🍷 Pinot Query UI:		\033[4mhttp://localhost:9000\033[0m\n"
-	@printf "🦊 Redpanda Console:		\033[4mhttp://localhost:9080\033[0m\n"
+	@printf "🦇 Kafka Console (Kafbat):	\033[4mhttp://localhost:9080\033[0m\n"
 	@printf "==========================================================\n"
 
 destroy:
