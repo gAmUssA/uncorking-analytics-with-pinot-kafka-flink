@@ -110,19 +110,21 @@ services:
 
 
   console:
-    hostname: console
-    container_name: console
-    image: docker.redpanda.com/redpandadata/console:latest
+    hostname: kafbat-ui
+    container_name: kafbat-ui
+    image: ghcr.io/kafbat/kafka-ui:latest
     restart: on-failure
     entrypoint: /bin/sh
-    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; /app/console"
+    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; java --add-opens java.rmi/javax.rmi.ssl=ALL-UNNAMED $$JAVA_OPTS -Dspring.config.additional-location=/tmp/config.yml -jar api.jar"
     environment:
+      KAFKA_CLUSTERS_0_NAME: uncorking-pinot-kafka
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9999
+      DYNAMIC_CONFIG_ENABLED: 'true'
       CONFIG_FILEPATH: /tmp/config.yml
       CONSOLE_CONFIG_FILE: |
         server:
-          listenPort: 9080
-        kafka:
-          brokers: ["kafka:9092"]
+          port: 9080
     ports:
       - "9080:9080"
     depends_on:
@@ -170,7 +172,7 @@ services:
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 16
-        
+  
   superset-pinot:
     image: apachepinot/pinot-superset:latest
     container_name: superset-pinot
