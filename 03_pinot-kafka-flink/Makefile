@@ -51,7 +51,7 @@ create:
 	@printf "$(GREEN)✔$(NC) 🪲 Kafka is ready!\n"
 
 topic:
-	docker exec uncorking-pinot-kafka kafka-topics.sh \
+	docker exec uncorking-pinot-kafka env -u KAFKA_JMX_OPTS kafka-topics.sh \
 		--bootstrap-server localhost:9092 \
 		--create \
 		--topic rated_movies
