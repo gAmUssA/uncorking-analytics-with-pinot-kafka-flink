@@ -1,0 +1,66 @@
+services:
+  pulsar:
+    image: apachepulsar/pulsar:3.3.1
+    container_name: pulsar
+    hostname: pulsar
+    ports:
+      - "6650:6650"
+      - "8080:8080"
+    volumes:
+      - pulsardata:/pulsar/data
+      - pulsarconf:/pulsar/conf
+    command: bin/pulsar standalone
+    healthcheck:
+      test: [ "CMD", "bin/pulsar-admin", "brokers", "healthcheck" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+
+  pulsar-manager:
+    image: apachepulsar/pulsar-manager:v0.3.0
+    container_name: pulsar-manager
+    ports:
+      - "9527:9527"
+      - "7750:7750"
+    environment:
+      - SPRING_CONFIGURATION_FILE=/pulsar-manager/pulsar-manager/application.properties
+    volumes:
+      - ./pulsar-manager-custom.properties:/pulsar-manager/pulsar-manager/application.properties
+    depends_on:
+      pulsar:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:7750/pulsar-manager/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  pulsar-manager-init:
+    image: alpine:3.14
+    depends_on:
+      - pulsar-manager
+    volumes:
+      - ./init-script.sh:/init-script.sh
+    command: [ "/bin/sh", "/init-script.sh" ]
+  
+  pulsar-producer:
+    build:
+      context: producer
+      dockerfile: Dockerfile
+    container_name: pulsar-producer
+    environment:
+      - PULSAR_SERVICE_URL=pulsar://pulsar:6650
+      - TOPIC=persistent://public/default/ratings
+      - DATA=/tmp/movies.jsonl
+      - LIMIT=100000
+    volumes:
+      - ./data/:/tmp/
+    depends_on:
+      - pulsar
+
+volumes:
+  pulsardata:
+  pulsarconf:
