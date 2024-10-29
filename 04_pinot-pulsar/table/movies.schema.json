@@ -1,0 +1,59 @@
+{
+  "schemaName": "movies",
+  "dimensionFieldSpecs": [
+    {
+      "name": "movieId",
+      "dataType": "INT"
+    },
+    {
+      "name": "title",
+      "dataType": "STRING"
+    },
+    {
+      "name": "releaseYear",
+      "dataType": "INT"
+    },
+    {
+      "name": "country",
+      "dataType": "STRING"
+    },
+    {
+      "name": "rating",
+      "dataType": "DOUBLE"
+    },
+    {
+      "name": "genres",
+      "dataType": "STRING",
+      "singleValueField": false
+    },
+    {
+      "name": "actors",
+      "dataType": "STRING",
+      "singleValueField": false
+    },
+    {
+      "name": "directors",
+      "dataType": "STRING",
+      "singleValueField": false
+    },
+    {
+      "name": "composers",
+      "dataType": "STRING",
+      "singleValueField": false
+    },
+    {
+      "name": "screenwriters",
+      "dataType": "STRING",
+      "singleValueField": false
+    },
+    {
+      "name": "productionCompanies",
+      "dataType": "STRING",
+      "singleValueField": false
+    },
+    {
+      "name": "cinematographer",
+      "dataType": "STRING"
+    }
+  ]
+}

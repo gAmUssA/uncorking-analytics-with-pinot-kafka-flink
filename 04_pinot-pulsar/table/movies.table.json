@@ -1,0 +1,17 @@
+{
+    "tableName": "movies",
+    "segmentsConfig" : {
+      "replication" : "1",
+      "schemaName" : "movies"
+    },
+    "tableIndexConfig" : {
+      "invertedIndexColumns" : [],
+      "loadMode"  : "MMAP"
+    },
+    "tenants" : {
+      "broker":"DefaultTenant",
+      "server":"DefaultTenant"
+    },
+    "tableType":"OFFLINE",
+    "metadata": {}
+  }

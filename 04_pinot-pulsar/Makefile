@@ -1,11 +1,12 @@
 GREEN=\033[0;32m
 NC=\033[0m # No Color
 
-base: create topic tables validate info
+base: create info tables import
 
 create:
-	docker compose build producer
+	docker compose build
 	docker compose up -d
+
 	@echo "------------------------------------------------"
 	@echo "\n⏳ Waiting for Pinot Controller to be ready..."
 	@while true; do \
@@ -43,54 +44,36 @@ create:
 	done
 	@printf "$(GREEN)✔$(NC) 🍷👩‍🔧 Pinot Server is ready to receive requests!\n"
 
-	@echo "\n⏳ Waiting for Kafka to be ready..."
-	@while ! nc -z localhost 9092; do \
-		sleep 1; \
-		echo "Waiting for Kafka..."; \
-	done
-	@printf "$(GREEN)✔$(NC) 🪲 Kafka is ready!\n"
-
-topic:
-	docker exec uncorking-pinot-kafka env -u KAFKA_JMX_OPTS kafka-topics.sh \
-		--bootstrap-server localhost:9092 \
-		--create \
-		--topic rated_movies
-
 tables:
-	@echo "\n 🎥 🍿Creating Rated Movies table..."
+	@echo "\n 🎥 Creating movies table..."
 	@docker exec pinot-controller ./bin/pinot-admin.sh \
 		AddTable \
-		-tableConfigFile /tmp/pinot/table/ratedmovies.table.json \
-		-schemaFile /tmp/pinot/table/ratedmovies.schema.json \
+		-tableConfigFile /tmp/pinot/table/movies.table.json \
+		-schemaFile /tmp/pinot/table/movies.schema.json \
 		-exec
 
-validate:
-	@echo "\n🍷 Getting cluster info..."
-	@curl -sX GET http://localhost:9000/cluster/info -H 'accept: application/json'
+	@echo "\n 🍿 Creating ratings table..."
+	@docker exec pinot-controller ./bin/pinot-admin.sh \
+		AddTable \
+		-tableConfigFile /tmp/pinot/table/ratings.table-pulsar.json \
+		-schemaFile /tmp/pinot/table/ratings.schema.json \
+		-exec
 
-	@echo "\n🍷 Getting Schemas..."
-	@SCHEMAS=$$(curl -sX 'GET' \
-      'http://localhost:9000/schemas' \
-      -H 'accept: application/json'); \
-	if echo "$$SCHEMAS" | grep -q "rated_movies"; then \
-		echo "Schema 'rated_movies' found."; \
-	else \
-		echo "Schema 'rated_movies' not found."; \
-		exit 1; \
-	fi; \
+import:
+	@docker exec pinot-controller ./bin/pinot-admin.sh \
+		LaunchDataIngestionJob \
+		-jobSpecFile /tmp/pinot/table/jobspec.yaml
 
-#superset-setup:
-#	docker exec superset-pinot superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@superset.com --password admin
-#	docker exec superset-pinot superset db upgrade  
-#	docker exec superset-pinot superset init
+destroy:
+	docker-compose down -v
+	docker system prune -f
+
+setup:
+	chmod +x setup-pulsar-manager.sh
+	./setup-pulsar-manager.sh
 
 info:     	
 	@printf "\n==========================================================\n"
 	@printf "🍷 Pinot Query UI:		\033[4mhttp://localhost:9000\033[0m\n"
-	@printf "🦇 Kafka Console (Kafbat):	\033[4mhttp://localhost:9080\033[0m\n"
-	@printf "🐿️ Flink Console:		\033[4mhttp://localhost:8081\033[0m\n"
-#	@printf "📊 Superset Dashboard:		\033[4mhttp://localhost:8088\033[0m\n"
+	@printf "🚨 Pulsar Manager:		\033[4mhttp://localhost:9527\033[0m\n"
 	@printf "==========================================================\n"
-
-destroy:
-	docker compose down -v

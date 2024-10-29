@@ -1,18 +1,57 @@
 services:
-  producer:
+  pulsar:
+    image: apachepulsar/pulsar:3.3.1
+    container_name: pulsar
+    hostname: pulsar
+    ports:
+      - "6650:6650"
+      - "8080:8080"
+    volumes:
+      - pulsardata:/pulsar/data
+      - pulsarconf:/pulsar/conf
+    command: bin/pulsar standalone
+    healthcheck:
+      test: [ "CMD", "bin/pulsar-admin", "brokers", "healthcheck" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  pulsar-manager:
+    image: apachepulsar/pulsar-manager:v0.4.0
+    container_name: pulsar-manager
+    ports:
+      - "9527:9527"
+      - "7750:7750"
+    environment:
+      SPRING_CONFIGURATION_FILE: /pulsar-manager/pulsar-manager/application.properties
+    volumes:
+      - pulsarmanagerdata:/data
+    depends_on:
+      pulsar:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:7750/pulsar-manager/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+  
+  pulsar-producer:
     build:
       context: producer
-    container_name: producer
+      dockerfile: Dockerfile
+    container_name: pulsar-producer
     environment:
-      - BOOTSTRAPSERVER=kafka:9092
-      - TOPIC=movie_ratings
+      - PULSAR_SERVICE_URL=pulsar://pulsar:6650
+      - TOPIC=persistent://public/default/ratings
       - DATA=/tmp/movies.jsonl
-      - LIMIT=1000000
-    depends_on:
-      - kafka
+      - LIMIT=100000
     volumes:
       - ../data/:/tmp/
-  
+    depends_on:
+      - pulsar
+
   pinot-zookeeper:
     image: zookeeper:latest
     container_name: pinot-zookeeper
@@ -83,51 +122,7 @@ services:
       pinot-controller:
         condition: service_healthy
 
-  kafka:
-    image: apache/kafka:3.8.0
-    hostname: kafka
-    container_name: uncorking-pinot-kafka
-    ports:
-      - "9092:9092"
-      - "29092:29092"
-    healthcheck:
-      test: [ "CMD", "nc", "-z", "localhost", "9092" ]
-      interval: 5s
-      timeout: 10s
-      retries: 10
-    environment:
-      - PATH=/opt/kafka/bin:$PATH
-      # KRaft settings
-      - KAFKA_NODE_ID=0
-      - KAFKA_PROCESS_ROLES=controller,broker
-      - KAFKA_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
-      # Listeners
-      - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,PLAINTEXT_HOST://:29092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://localhost:29092
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-      - JMX_PORT = 9999
-      - KAFKA_JMX_OPTS=-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.rmi.port=9999 -Djava.rmi.server.hostname=kafka -Dcom.sun.management.jmxremote.local.only=false
-  
-  console:
-    hostname: kafbat-ui
-    container_name: kafbat-ui
-    image: ghcr.io/kafbat/kafka-ui:latest
-    restart: on-failure
-    entrypoint: /bin/sh
-    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; java --add-opens java.rmi/javax.rmi.ssl=ALL-UNNAMED $$JAVA_OPTS -Dspring.config.additional-location=/tmp/config.yml -jar api.jar"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: uncorking-pinot-kafka
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-      KAFKA_CLUSTERS_0_METRICS_PORT: 9999
-      DYNAMIC_CONFIG_ENABLED: 'true'
-      CONFIG_FILEPATH: /tmp/config.yml
-      CONSOLE_CONFIG_FILE: |
-        server:
-          port: 9080
-    ports:
-      - "9080:9080"
-    depends_on:
-      - kafka
-  
+volumes:
+  pulsardata:
+  pulsarconf:
+  pulsarmanagerdata:

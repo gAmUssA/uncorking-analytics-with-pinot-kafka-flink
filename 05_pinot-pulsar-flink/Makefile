@@ -1,11 +1,10 @@
 GREEN=\033[0;32m
 NC=\033[0m # No Color
 
-base: create topic tables validate info
+base: create tables validate info
 
 create:
-	docker compose build producer
-	docker compose up -d
+	docker compose up -d --build
 	@echo "------------------------------------------------"
 	@echo "\n⏳ Waiting for Pinot Controller to be ready..."
 	@while true; do \
@@ -43,18 +42,12 @@ create:
 	done
 	@printf "$(GREEN)✔$(NC) 🍷👩‍🔧 Pinot Server is ready to receive requests!\n"
 
-	@echo "\n⏳ Waiting for Kafka to be ready..."
-	@while ! nc -z localhost 9092; do \
+	@echo "\n⏳ Waiting for Pulsar to be ready..."
+	@while ! nc -z localhost 6650; do \
 		sleep 1; \
-		echo "Waiting for Kafka..."; \
+		echo "Waiting for Pulsar..."; \
 	done
-	@printf "$(GREEN)✔$(NC) 🪲 Kafka is ready!\n"
-
-topic:
-	docker exec uncorking-pinot-kafka env -u KAFKA_JMX_OPTS kafka-topics.sh \
-		--bootstrap-server localhost:9092 \
-		--create \
-		--topic rated_movies
+	@printf "$(GREEN)✔$(NC) 🎏 Pulsar is ready!\n"
 
 tables:
 	@echo "\n 🎥 🍿Creating Rated Movies table..."
@@ -79,17 +72,10 @@ validate:
 		exit 1; \
 	fi; \
 
-#superset-setup:
-#	docker exec superset-pinot superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@superset.com --password admin
-#	docker exec superset-pinot superset db upgrade  
-#	docker exec superset-pinot superset init
-
 info:     	
 	@printf "\n==========================================================\n"
 	@printf "🍷 Pinot Query UI:		\033[4mhttp://localhost:9000\033[0m\n"
-	@printf "🦇 Kafka Console (Kafbat):	\033[4mhttp://localhost:9080\033[0m\n"
 	@printf "🐿️ Flink Console:		\033[4mhttp://localhost:8081\033[0m\n"
-#	@printf "📊 Superset Dashboard:		\033[4mhttp://localhost:8088\033[0m\n"
 	@printf "==========================================================\n"
 
 destroy:

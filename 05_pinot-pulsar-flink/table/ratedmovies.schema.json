@@ -1,0 +1,41 @@
+{
+  "schemaName": "rated_movies",
+  "enableColumnBasedNullHandling": false,
+  "dimensionFieldSpecs": [
+    {
+      "name": "movieId",
+      "dataType": "INT",
+      "notNull": false
+    },
+    {
+      "name": "title",
+      "dataType": "STRING",
+      "notNull": false
+    },
+    {
+      "name": "releaseYear",
+      "dataType": "INT",
+      "notNull": false
+    },
+    {
+      "name": "actors",
+      "dataType": "STRING",
+      "singleValueField": false,
+      "notNull": false
+    },
+    {
+      "name": "rating",
+      "dataType": "INT",
+      "notNull": false
+
+    }
+  ],
+  "dateTimeFieldSpecs": [
+    {
+      "name": "ratingTime",
+      "dataType": "LONG",
+      "format": "EPOCH",
+      "granularity": "1:SECONDS"
+    }
+  ]
+}
