@@ -17,17 +17,16 @@ services:
       retries: 3
       start_period: 30s
 
-
   pulsar-manager:
-    image: apachepulsar/pulsar-manager:v0.3.0
+    image: apachepulsar/pulsar-manager:v0.4.0
     container_name: pulsar-manager
     ports:
       - "9527:9527"
       - "7750:7750"
     environment:
-      - SPRING_CONFIGURATION_FILE=/pulsar-manager/pulsar-manager/application.properties
+      SPRING_CONFIGURATION_FILE: /pulsar-manager/pulsar-manager/application.properties
     volumes:
-      - ./pulsar-manager-custom.properties:/pulsar-manager/pulsar-manager/application.properties
+      - pulsarmanagerdata:/data
     depends_on:
       pulsar:
         condition: service_healthy
@@ -37,14 +36,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-
-  pulsar-manager-init:
-    image: alpine:3.14
-    depends_on:
-      - pulsar-manager
-    volumes:
-      - ./init-script.sh:/init-script.sh
-    command: [ "/bin/sh", "/init-script.sh" ]
   
   pulsar-producer:
     build:
@@ -57,7 +48,7 @@ services:
       - DATA=/tmp/movies.jsonl
       - LIMIT=100000
     volumes:
-      - ./data/:/tmp/
+      - ../data/:/tmp/
     depends_on:
       - pulsar
 
@@ -90,7 +81,7 @@ services:
       start_period: 10s
     volumes:
       - ./table/:/tmp/pinot/table/
-      - ./data/:/tmp/pinot/data/
+      - ../data/:/tmp/pinot/data/
 
   pinot-broker:
     image: apachepinot/pinot:1.2.0-21-openjdk
@@ -134,3 +125,4 @@ services:
 volumes:
   pulsardata:
   pulsarconf:
+  pulsarmanagerdata:

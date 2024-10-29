@@ -1,0 +1,182 @@
+=== Part 2: Real-time Ingestion with Apache Pulsar
+
+* *Directory:* `04_pinot-pulsar`
+* *Objective:* Implement real-time data ingestion into Apache Pinot using Apache Pulsar as the data source, simulating a stream of movie ratings.
+* *Setup:*
+** Make sure Docker Compose is running with the necessary services including Apache Pulsar and Apache Pinot.
+** Navigate to the `04_pinot-pulsar` directory where the necessary files and scripts are located.
+
+* *Tasks:*
+
+==== Step 1: Build and Launch with Docker
+
+* *Description:* Prepare the environment by building and launching the required Docker containers, which include Apache Pulsar (standalone mode) and Apache Pinot components.
+* *Action:*
++
+[source,bash]
+----
+docker compose build --no-cache
+docker compose up -d
+----
+
+==== Step 2: Create Pulsar Topics and Namespaces
+
+* *Description:* Create necessary Pulsar topics for streaming movie rating data.
+* *Action:*
++
+[source,bash]
+----
+# Create namespace if it doesn't exist
+docker exec -it pulsar bin/pulsar-admin namespaces create public/default
+
+# Create movie_ratings topic
+docker exec -it pulsar bin/pulsar-admin topics create persistent://public/default/movie_ratings
+
+# Verify topic creation
+docker exec -it pulsar bin/pulsar-admin topics list public/default
+----
+
+==== Step 3: Configure Pinot Tables
+
+* *Description:* Set up a REALTIME table in Apache Pinot to ingest data from the Pulsar topic.
+* *Action:*
++
+[source,bash]
+----
+docker exec -it pinot-controller ./bin/pinot-admin.sh \
+    AddTable \
+    -tableConfigFile /tmp/pinot/table/ratings.table.json \
+    -schemaFile /tmp/pinot/table/ratings.schema.json \
+    -exec
+----
+
+* Example table configuration for Pulsar:
++
+[source,json]
+----
+{
+  "tableName": "movie_ratings",
+  "tableType": "REALTIME",
+  "segmentsConfig": {
+    "timeColumnName": "ratingTime",
+    "timeType": "MILLISECONDS",
+    "replicationNumber": 1,
+    "retentionTimeUnit": "DAYS",
+    "retentionTimeValue": "7"
+  },
+  "tenants": {
+    "broker": "DefaultTenant",
+    "server": "DefaultTenant"
+  },
+  "tableIndexConfig": {
+    "loadMode": "MMAP",
+    "streamConfigs": {
+      "streamType": "pulsar",
+      "stream.pulsar.consumer.type": "exclusive",
+      "stream.pulsar.topic.name": "persistent://public/default/movie_ratings",
+      "stream.pulsar.bootstrap.servers": "pulsar://pulsar:6650",
+      "stream.pulsar.consumer.prop.subscriptionName": "pinot_movie_ratings",
+      "stream.pulsar.decoder.class.name": "org.apache.pinot.plugin.stream.pulsar.PulsarJSONMessageDecoder"
+    }
+  }
+}
+----
+
+* *Verification:*
+** Check the real-time data streaming into Pinot by querying the `movie_ratings` table in the Pinot console:
++
+[source,bash]
+----
+http://localhost:9000/#/query?query=select+*+from+movie_ratings+limit+10&tracing=false&useMSE=false
+----
+
+==== Step 4: Monitor Pulsar Topics
+
+* *Description:* Monitor the Pulsar topics and verify data flow.
+* *Actions:*
++
+[source,bash]
+----
+# Check topic stats
+docker exec -it pulsar bin/pulsar-admin topics stats persistent://public/default/movie_ratings
+
+# Consume messages for verification
+docker exec -it pulsar bin/pulsar-client consume persistent://public/default/movie_ratings -s "test-sub" -n 0
+----
+
+==== Step 5: Apache Pinot Advanced Usage (Optional)
+
+* *Description:* Explore advanced features of Apache Pinot such as running multi-stage joins between real-time and batch data.
+* *Action:*
+** Enable 'Use Multi-Stage Engine' in the Pinot console to perform complex queries.
++
+[source,sql]
+----
+select
+    r.rating as latest_rating,
+    m.rating as initial_rating,
+    m.title,
+    m.genres,
+    m.releaseYear
+from movies m
+         left join movie_ratings r 
+             on m.movieId = r.movieId
+where r.rating > 0.9
+order by r.rating desc
+    limit 10
+----
+
+==== Clean Up
+
+* To stop and remove all services related to this part of the workshop, run:
++
+[source,bash]
+----
+make destroy
+----
+
+==== Troubleshooting
+
+* If encountering issues with Pulsar topics:
++
+[source,bash]
+----
+# List all topics
+docker exec -it pulsar bin/pulsar-admin topics list public/default
+
+# Delete and recreate topic if needed
+docker exec -it pulsar bin/pulsar-admin topics delete persistent://public/default/movie_ratings
+docker exec -it pulsar bin/pulsar-admin topics create persistent://public/default/movie_ratings
+
+# Check topic stats
+docker exec -it pulsar bin/pulsar-admin topics stats persistent://public/default/movie_ratings
+----
+
+* If encountering issues such as 'No space left on device' during the Docker build process:
++
+[source,bash]
+----
+docker system prune -f
+----
+
+* To verify Pulsar connection in Pinot:
++
+[source,bash]
+----
+# Check Pinot controller logs
+docker logs pinot-controller
+
+# Check Pinot server logs
+docker logs pinot-server
+----
+
+* To verify Pulsar is running correctly:
++
+[source,bash]
+----
+# Check Pulsar broker status
+docker exec -it pulsar bin/pulsar-admin brokers healthcheck
+
+# Check Pulsar cluster status
+docker exec -it pulsar bin/pulsar-admin clusters get public
+----

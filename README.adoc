@@ -1,5 +1,5 @@
-= Uncorking Analytics with Apache Kafka®, Apache Flink, and Apache Pinot™
-Viktor Gamov <viktor@startree.ai>
+= Uncorking Analytics with Apache Kafka, Pulsar, Flink, and Pinot
+Viktor Gamov <viktor@confluent.io>
 v1.0, 2024-04-25
 :toc:
 :imagesdir: images
@@ -8,22 +8,22 @@ v1.0, 2024-04-25
 == Abstract
 
 Apache Pinot is a high-performance database engineered to serve analytical queries with extremely high concurrency, boasting latencies as low as tens of milliseconds.
-It excels at ingesting streaming data from sources like Apache Kafka and is optimized for real-time, user-facing analytics applications.
+It excels at ingesting streaming data from sources like Apache Kafka and Apache Pulsar and is optimized for real-time, user-facing analytics applications.
 
-In this full-day training, we will explore the architectures of Apache Kafka, Apache Flink, and Apache Pinot.
+In this repo, we will explore the architectures of Apache Kafka, Apache Pulsar, Apache Flink, and Apache Pinot.
 We will run local clusters of each system, studying the role each plays in a real-time analytics pipeline.
-Participants will begin by ingesting static data into Pinot and querying it.
-Not content to stop there, we'll add a streaming data source in Kafka, and ingest that into Pinot as well, showing how both data sources can work together to enrich an application.
-We’ll then examine which analytics operations belong in the analytics data store (Pinot) and which ones should be computed before ingestion.
-These operations will be implemented in Flink.
-Having put all three technologies to use on your own in hands-on exercises, you'll leave prepared to begin exploring them together for your own real-time, user-facing analytics applications.
+Developers will begin by ingesting static data into Pinot and querying it.
+Not content to stop there, we will add a streaming data source in Kafka or Pulsar, and ingest that into Pinot as well, showing how both data sources can work together to enrich an application.
+We will then examine which analytics operations belong in the analytics data store (Pinot) and which ones should be computed before ingestion.
+These operations will be implemented in Apache Flink.
+Having put all three technologies to use on your own in hands-on exercises, you will leave prepared to begin exploring them together for your own real-time, user-facing analytics applications.
 
 == Learning Objectives
 
 At the successful completion of this training, you will be able to:
 
-* List the essential components of Pinot, Kafka, and Flink.
-* Explain the architecture of Apache Pinot and its integration with Apache Kafka and Apache Flink.
+* List the essential components of Pinot, Kafka, Pulsar and Flink.
+* Explain the architecture of Apache Pinot and its integration with Apache Kafka, Apache Pulsar and Apache Flink.
 * Form an opinion about the proper role of Kafka, Flink, and Pinot in a real-time analytics stack.
 * Implement basic stream processing tasks with Apache Flink.
 * Create a table in Pinot, including schema definition and table configuration.
@@ -36,15 +36,14 @@ At the successful completion of this training, you will be able to:
 To participate in this workshop, you will need the following:
 
 * Docker Desktop: We will use Docker to run Pinot, Kafka, and Flink locally.
-If you need to install it, please download Docker Desktop and follow the instructions to install it at https://www.docker.com/get-started/.
+If you need to install it, please, download Docker Desktop and follow the instructions to install it at https://www.docker.com/get-started/ or use OrbStack https://orbstack.dev.
 * Resources: Pinot works well in Docker but is not designed as a desktop solution.
 Running it locally requires a minimum of 8GB of Memory and 10GB of disk space.
-
 
 == Let's Get Going!
 === Before the Workshop
 
-To ensure you are fully prepared for the workshop, please follow these guidelines:
+To ensure you're fully prepared for the workshop, please follow these guidelines:
 
 * *Version Control:*
 ** Check out the latest version of the workshop repository to access all necessary materials and scripts.

@@ -83,7 +83,7 @@ services:
       - LIMIT=100000
       - DATA=/app/data/movies.jsonl
     volumes:
-      - ./data:/app/data
+      - ../data:/app/data
 
   pinot-zookeeper:
     image: zookeeper:latest
@@ -114,7 +114,7 @@ services:
       start_period: 10s
     volumes:
       - ./table/:/tmp/pinot/table/
-      - ./data/:/tmp/pinot/data/
+      - ../data/:/tmp/pinot/data/
 
   pinot-broker:
     image: apachepinot/pinot:1.2.0-21-openjdk

@@ -65,7 +65,12 @@ import:
 		-jobSpecFile /tmp/pinot/table/jobspec.yaml
 
 destroy:
-	docker compose down -v
+	docker-compose down -v
+	docker system prune -f
+
+setup:
+	chmod +x setup-pulsar-manager.sh
+	./setup-pulsar-manager.sh
 
 info:     	
 	@printf "\n==========================================================\n"

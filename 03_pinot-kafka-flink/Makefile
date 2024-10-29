@@ -1,7 +1,7 @@
 GREEN=\033[0;32m
 NC=\033[0m # No Color
 
-base: create topic tables validate superset-setup info
+base: create topic tables validate info
 
 create:
 	docker compose build producer
@@ -79,17 +79,17 @@ validate:
 		exit 1; \
 	fi; \
 
-superset-setup:
-	docker exec superset-pinot superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@superset.com --password admin
-	docker exec superset-pinot superset db upgrade  
-	docker exec superset-pinot superset init
+#superset-setup:
+#	docker exec superset-pinot superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@superset.com --password admin
+#	docker exec superset-pinot superset db upgrade  
+#	docker exec superset-pinot superset init
 
 info:     	
 	@printf "\n==========================================================\n"
 	@printf "🍷 Pinot Query UI:		\033[4mhttp://localhost:9000\033[0m\n"
 	@printf "🦇 Kafka Console (Kafbat):	\033[4mhttp://localhost:9080\033[0m\n"
 	@printf "🐿️ Flink Console:		\033[4mhttp://localhost:8081\033[0m\n"
-	@printf "📊 Superset Dashboard:		\033[4mhttp://localhost:8088\033[0m\n"
+#	@printf "📊 Superset Dashboard:		\033[4mhttp://localhost:8088\033[0m\n"
 	@printf "==========================================================\n"
 
 destroy:

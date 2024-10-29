@@ -10,7 +10,7 @@ services:
       - DATA=/tmp/movies.jsonl
       - LIMIT=100000000
     volumes:
-      - ./data/:/tmp/
+      - ../data/:/tmp/
 
   pinot-zookeeper:
     image: zookeeper:latest
@@ -41,7 +41,7 @@ services:
       start_period: 10s
     volumes:
       - ./table/:/tmp/pinot/table/
-      - ./data/:/tmp/pinot/data/
+      - ../data/:/tmp/pinot/data/
 
   pinot-broker:
     image: apachepinot/pinot:1.2.0-21-openjdk
@@ -176,12 +176,12 @@ services:
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 16
   
-  superset-pinot:
-    image: apachepinot/pinot-superset:latest
-    container_name: superset-pinot
-    command: ""
-    environment:
-      SUPERSET_SECRET_KEY: "pmFmur1eluMiQDoZA+cGHhY/cA8+0+Ko7EZi5afhXWlH1oH/rQkVHNVOY1hRXAUi"
-      TALISMAN_ENABLED: "False"
-    ports:
-      - "8088:8088"
+#  superset-pinot:
+#    image: apachepinot/pinot-superset:latest
+#    container_name: superset-pinot
+#    command: ""
+#    environment:
+#      SUPERSET_SECRET_KEY: "pmFmur1eluMiQDoZA+cGHhY/cA8+0+Ko7EZi5afhXWlH1oH/rQkVHNVOY1hRXAUi"
+#      TALISMAN_ENABLED: "False"
+#    ports:
+#      - "8088:8088"
