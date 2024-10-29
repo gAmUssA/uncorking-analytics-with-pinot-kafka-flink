@@ -1,5 +1,5 @@
 # Define the list of directories
-DIRS := 01_pinot 02_pinot-kafka 03_pinot-kafka-flink
+DIRS := 01_pinot 02_pinot-kafka 03_pinot-kafka-flink 04_pinot-pulsar 05_pinot-pulsar-flink
 
 # Default target
 all: pull_images
