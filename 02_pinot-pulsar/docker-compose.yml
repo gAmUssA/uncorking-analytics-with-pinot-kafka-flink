@@ -61,6 +61,76 @@ services:
     depends_on:
       - pulsar
 
+  pinot-zookeeper:
+    image: zookeeper:latest
+    container_name: pinot-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  
+  pinot-controller:
+    image: apachepinot/pinot:1.2.0-21-openjdk
+    command: "StartController -zkAddress pinot-zookeeper:2181"
+    container_name: pinot-controller
+    hostname: pinot-controller
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xlog:gc:gc-pinot-controller.log"
+    depends_on:
+      - pinot-zookeeper
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9000/health || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - ./table/:/tmp/pinot/table/
+      - ./data/:/tmp/pinot/data/
+
+  pinot-broker:
+    image: apachepinot/pinot:1.2.0-21-openjdk
+    command: "StartBroker -zkAddress pinot-zookeeper:2181"
+    restart: unless-stopped
+    container_name: "pinot-broker"
+    ports:
+      - "8099:8099"
+    environment:
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xlog:gc:gc-pinot-broker.log"
+    depends_on:
+      pinot-controller:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8099/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  pinot-server:
+    image: apachepinot/pinot:1.2.0-21-openjdk
+    command: "StartServer -zkAddress pinot-zookeeper:2181"
+    restart: unless-stopped
+    container_name: "pinot-server"
+    ports:
+      - "8097:8097"
+      - "8098:8098"
+    environment:
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx16G -XX:+UseG1GC -XX:MaxGCPauseMillis=200  -Xlog:gc:gc-pinot-server.log"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8097/health/readiness || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      pinot-controller:
+        condition: service_healthy
+
 volumes:
   pulsardata:
   pulsarconf:
