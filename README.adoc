@@ -136,3 +136,11 @@ include::02_pinot-kafka/README.adoc[]
 image::figure3.png[]
 
 include::03_pinot-kafka-flink/README.adoc[]
+
+image::exhibit_2.png[]
+
+include::04_pinot-pulsar/README.adoc[]
+
+image::exhibit_3.png[]
+
+include::05_pinot-pulsar-flink/README.adoc[]
