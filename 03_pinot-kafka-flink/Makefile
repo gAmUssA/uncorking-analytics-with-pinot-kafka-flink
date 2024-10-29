@@ -4,7 +4,7 @@ NC=\033[0m # No Color
 base: create topic tables validate superset-setup info
 
 create:
-	docker compose build --no-cache
+	docker compose build producer
 	docker compose up -d
 	@echo "------------------------------------------------"
 	@echo "\n⏳ Waiting for Pinot Controller to be ready..."

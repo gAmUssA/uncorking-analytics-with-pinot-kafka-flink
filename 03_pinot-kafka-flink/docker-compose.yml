@@ -136,6 +136,8 @@ services:
       context: flink
     container_name: sql-client
     command: bin/sql-client.sh
+    volumes:
+      - ./sql/flink-sql-history:/opt/flink/.flink-sql-history
     depends_on:
       - jobmanager
     environment:
